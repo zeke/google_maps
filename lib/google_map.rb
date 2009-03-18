@@ -5,7 +5,9 @@ class GoogleMap
     :markers,
     :controls,
     :inject_on_load,
-    :zoom
+    :zoom,
+    :center,
+    :type
   
   def initialize(options = {})
     self.dom_id = 'google_map'
@@ -34,7 +36,7 @@ class GoogleMap
     
     js << markers_functions_js
     
-    js << center_on_markers_function_js
+    js << center_map_js
     
     js << "function initialize_google_map_#{dom_id}() {"
     js << "  if(GBrowserIsCompatible()) {"
@@ -44,6 +46,9 @@ class GoogleMap
     #   added by Patrick to enable load functions
     js << "#{dom_id}.load = GEvent.addListener(#{dom_id},'load',GoogleMapOnLoad)"
     js << "}"
+      
+    js << '    ' + type_js
+      
     js << '    ' + controls_js
     
     js << '    ' + center_on_markers_js
@@ -83,6 +88,13 @@ class GoogleMap
     #js << "}"
         
     return js.join("\n")
+  end
+
+  def type_js
+    js = ""
+    if type
+      js = "#{dom_id}.setMapType(#{type});"
+    end
   end
   
   def controls_js
@@ -133,31 +145,44 @@ class GoogleMap
     return js.join("\n")
   end
   
-  # Creates a JS function that centers the map on its markers.
-  def center_on_markers_function_js
+  # Creates a JS function that centers the map on the specified center
+  # location if given to the initialisers, or on the maps markers if they exist, or
+  # at (0,0) if not.
+  def center_map_js
     if markers.size == 0
       set_center_js = "#{dom_id}.setCenter(new GLatLng(0, 0), 0);"
     else
 
-      for marker in markers
-        min_lat = marker.lat if !min_lat or marker.lat < min_lat
-        max_lat = marker.lat if !max_lat or marker.lat > max_lat
-        min_lng = marker.lng if !min_lng or marker.lng < min_lng
-        max_lng = marker.lng if !max_lng or marker.lng > max_lng
-      end
+      if self.center
+        max_lat = @center[0] + 0.05
+        min_lat = @center[0] - 0.05
+        max_lng = @center[1] + 0.05
+        min_lng = @center[1] - 0.05
 
+        center_js = "new GLatLng(#{center[0]}, #{center[1]})"
+      else
+        for marker in markers
+          min_lat = marker.lat if !min_lat or marker.lat < min_lat
+          max_lat = marker.lat if !max_lat or marker.lat > max_lat
+          min_lng = marker.lng if !min_lng or marker.lng < min_lng
+          max_lng = marker.lng if !max_lng or marker.lng > max_lng
+
+          center_js = "new GLatLng(#{(min_lat + max_lat) / 2}, #{(min_lng + max_lng) / 2})"
+        end
+      end
+      
       if self.zoom
         zoom_js = zoom
       else
         bounds_js = "new GLatLngBounds(new GLatLng(#{min_lat}, #{min_lng}), new GLatLng(#{max_lat}, #{max_lng}))"
         zoom_js = "#{dom_id}.getBoundsZoomLevel(#{bounds_js})"
       end
-    
-      center_js = "new GLatLng(#{(min_lat + max_lat) / 2}, #{(min_lng + max_lng) / 2})"
+
       set_center_js = "#{dom_id}.setCenter(#{center_js}, #{zoom_js});"
     end
-    
+
     return "function center_#{dom_id}() {\n  #{check_resize_js}\n  #{set_center_js}\n}"
+
   end
   
   def check_resize_js
