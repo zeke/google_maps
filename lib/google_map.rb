@@ -12,7 +12,7 @@ class GoogleMap
     :continuous_zoom,
     :scroll_wheel_zoom,
     :bounds
-    :type
+    :map_type
   
   def initialize(options = {})
     self.dom_id = 'google_map'
@@ -61,7 +61,7 @@ class GoogleMap
     js << "#{dom_id}.load = GEvent.addListener(#{dom_id},'load',GoogleMapOnLoad)"
     js << "}"
       
-    js << '    ' + type_js
+    js << '    ' + map_type_js
       
     js << '    ' + controls_js
     
@@ -113,11 +113,13 @@ class GoogleMap
     return js.join("\n")
   end
 
-  def type_js
-    js = ""
+  def map_type_js
+    js = []
     if type
-      js = "#{dom_id}.setMapType(#{type});"
+      js << "#{dom_id}.setMapType(#{type});"
     end
+    
+    js.join("\n")
   end
   
   def controls_js
