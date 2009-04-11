@@ -56,4 +56,10 @@ class GoogleMapTest < Test::Unit::TestCase
       assert @map.to_html.include? "#{@map.overlays[i - 1].dom_id} = new GGeoXml('http://code.google.com/apis/kml/documentation/KML_Samples.kml')";
     end
   end
+  
+  def test_map_type
+    assert !@map.to_html.include?("setMapType(GoogleMap)")
+    @map.map_type = "foo"
+    assert @map.to_html.include? "setMapType(foo)"
+  end
 end

@@ -11,7 +11,7 @@ class GoogleMap
     :double_click_zoom,
     :continuous_zoom,
     :scroll_wheel_zoom,
-    :bounds
+    :bounds,
     :map_type
   
   def initialize(options = {})
@@ -115,8 +115,8 @@ class GoogleMap
 
   def map_type_js
     js = []
-    if type
-      js << "#{dom_id}.setMapType(#{type});"
+    if map_type
+      js << "#{dom_id}.setMapType(#{map_type});"
     end
     
     js.join("\n")
