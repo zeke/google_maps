@@ -11,18 +11,19 @@ class GoogleMap
     :double_click_zoom,
     :continuous_zoom,
     :scroll_wheel_zoom,
-    :bounds
-    :type
+    :bounds,
+    :map_type
   
   def initialize(options = {})
     self.dom_id = 'google_map'
     self.markers = []
     self.overlays = []
     self.bounds = []
-    self.controls = [ :zoom, :overview, :scale, :type ]
+    self.controls = [ :zoom, :overview, :scale, :map_type ]
     self.double_click_zoom = true
     self.continuous_zoom = false
     self.scroll_wheel_zoom = false
+    self.map_type = 'G_NORMAL_MAP'
     options.each_pair { |key, value| send("#{key}=", value) }
   end
   
@@ -115,8 +116,8 @@ class GoogleMap
 
   def type_js
     js = ""
-    if type
-      js = "#{dom_id}.setMapType(#{type});"
+    if map_type
+      js = "#{dom_id}.setMapType(#{map_type});"
     end
   end
   
@@ -131,7 +132,7 @@ class GoogleMap
         c = "GLargeMapControl3D"
       when :scale
         c = "GScaleControl"
-      when :type
+      when :map_type
         c = "GMapTypeControl"
       when :menu_type
         c = "GMenuMapTypeControl"
