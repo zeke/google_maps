@@ -46,8 +46,6 @@ class GoogleMapMarker
     
     i = ", { icon: new GIcon( G_DEFAULT_ICON, '#{marker_icon_path}')#{h}}" if marker_icon_path
 
-puts i
-
     # js << "map.addOverlay( marker = new GMarker( new GLatLng(#{lat}, #{lng})), { "
     # js << "  icon: new GIcon( G_DEFAULT_ICON, '#{marker_icon_path}' ), "
     # js << "  title: '#{marker_hover_text}'"
