@@ -1,41 +1,43 @@
 module GoogleMap
 
   class Polyline
+    #include Reloadable
+    include UnbackedDomId
+
     attr_accessor :dom_id,
                   :map,
-                  :points,
+                  :vertices,
                   :color,
-                  :weight
+                  :weight,
+                  :opacity
 
-    def initialize(options)
-      self.color = '#000000'
+    def initialize(options = {})
+      self.vertices = []
+      self.color = "#000"
       self.weight = 1
+      self.opacity = 1
       options.each_pair { |key, value| send("#{key}=", value) }
-      
       if !map or !map.kind_of?(GoogleMap::Map)
-        raise "Must set lat, lng, and map for GoogleMapMarker."
+        raise "Must set map for GoogleMap::Polyline."
       end
       if dom_id.blank?
         # This needs self to set the attr_accessor, why?
-        self.dom_id = "#{map.dom_id}"
+        self.dom_id = "#{map.dom_id}_marker_#{map.markers.size + 1}"
       end
     end
-        
+            
     def to_js
-      js = []
-      js << "var polyOptions = {geodesic:true};"
-      js << "var polyline = new GPolyline(["
-      
-      self.points.each do |p|
-        js << "#{p.to_js}#{ self.points.last == p ? '' : ',' }"
-      end
-      
-      js << "], '#{self.color}', #{self.weight}, 1, polyOptions);"
-      js << "#{map.dom_id}.addOverlay(polyline);"
-      
-      return js.join("\n")  	
-    end
-    
-  end
 
+      js = []
+      js << "#{dom_id}_vertices = new Array();"
+      vertices.each_with_index do |latlng, index|
+        js << "#{dom_id}_vertices[#{index}] = new GLatLng(#{latlng[0]}, #{latlng[1]});"
+      end
+
+      js << "#{dom_id} = new GPolyline(#{dom_id}_vertices, '#{color}', #{weight}, #{opacity});"
+
+      js.join "\n"
+    end
+  end
+  
 end
