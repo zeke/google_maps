@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream:lib/google_map.rb
 class GoogleMap
   #include Reloadable
   include UnbackedDomId
@@ -239,3 +240,16 @@ class GoogleMap
     "<div id='#{dom_id}' style='width: #{width}; height: #{height}'></div>"
   end
 end
+=======
+require 'google_map/bounding_box'
+require 'google_map/clusterer'
+require 'google_map/icon'
+require 'google_map/letter_icon'
+require 'google_map/marker'
+require 'google_map/marker_group'
+require 'google_map/point'
+require 'google_map/polyline'
+require 'google_map/small_icon'
+
+
+>>>>>>> Stashed changes:lib/google_map.rb
