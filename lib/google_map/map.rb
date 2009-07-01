@@ -183,19 +183,10 @@ module GoogleMap
       if self.center
         set_center_js << "#{dom_id}.setCenter(new GLatLng(#{center[0]}, #{center[1]}), #{zoom_js});"
       else
-        5.times do puts "before sync" end
-        puts bounds.inspect
-        
         synch_bounds
-
-        5.times do puts "after sync" end
-        puts bounds.inspect
-
         set_center_js << "var #{dom_id}_latlng_bounds = new GLatLngBounds();"
         
         bounds.each do |latlng|
-          puts "each"
-          puts latlng.inspect
           set_center_js << "#{dom_id}_latlng_bounds.extend(new GLatLng(#{latlng[0]}, #{latlng[1]}));"
         end  
         
