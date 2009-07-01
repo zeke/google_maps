@@ -81,16 +81,14 @@ class MapsController < ApplicationController
 		@map = GoogleMap::Map.new
   		
 		# plot points for polyline
-		points = []
-		object.gpxroute.gpxtrackpoints.each do |p|
-		  points << GoogleMap::Point.new(p.lat, p.lon)
-		end
+        vertices = []
+        object.gpxroute.gpxtrackpoints.each do |p|
+          vertices << [p.lat, p.lon]
+        end
 		
   		# plot polyline
-		@map.polylines << GoogleMap::Polyline.new(	:map => @map, 
-													:color=>'#FF0000', 
-													:weight=>'2', 
-													:points=>points)
+		@map.overlays << GoogleMap::Polyline.new(:map => @map, :color=>'#FF0000', :weight=>'2', :opacity=>'.5', :vertices=>vertices)
+        
 	end
 end
 
