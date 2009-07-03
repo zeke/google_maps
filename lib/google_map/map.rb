@@ -202,13 +202,13 @@ module GoogleMap
       overlays.each do |overlay|
         if overlay.is_a? GoogleMap::Polyline
           overlay.vertices.each do |v|
-            bounds << [v[0], v[1]] #i do not like this inconsistent interface
+            bounds << v #i do not like this inconsistent interface
           end 
         end
       end
       
       markers.each do |m|
-        bounds << [m.lat, m.lng]
+        bounds << m
       end    
       
       bounds.uniq!
