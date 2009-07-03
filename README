@@ -151,7 +151,7 @@ class MapsController < ApplicationController
 		# plot points for polyline
         vertices = []
         object.gpxroute.gpxtrackpoints.each do |p|
-          vertices << [p.lat, p.lon]
+          vertices << GoogleMap::Point.new(p.lat, p.lon)
         end
 		
   		# plot polyline
