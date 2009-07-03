@@ -20,7 +20,7 @@ module GoogleMap
       self.markers = []
       self.overlays = []
       self.bounds = []
-      self.controls = [ :zoom, :overview, :scale, :type ]
+      self.controls = [ :large, :scale, :type ]
       self.double_click_zoom = true
       self.continuous_zoom = false
       self.scroll_wheel_zoom = false
@@ -180,18 +180,20 @@ module GoogleMap
         zoom_js = "#{dom_id}.getBoundsZoomLevel(#{dom_id}_latlng_bounds)"
       end
       set_center_js = []
+      
       if self.center
-        set_center_js << "#{dom_id}.setCenter(new GLatLng(#{center[0]}, #{center[1]}), #{zoom_js});"
+        set_center_js << "#{dom_id}.setCenter(new GLatLng(#{center.lat}, #{center.lng}), #{zoom_js});"
       else
         synch_bounds
         set_center_js << "var #{dom_id}_latlng_bounds = new GLatLngBounds();"
         
-        bounds.each do |latlng|
-          set_center_js << "#{dom_id}_latlng_bounds.extend(new GLatLng(#{latlng[0]}, #{latlng[1]}));"
+        bounds.each do |point|
+          set_center_js << "#{dom_id}_latlng_bounds.extend(new GLatLng(#{point.lat}, #{point.lng}));"
         end  
         
         set_center_js << "#{dom_id}.setCenter(#{dom_id}_latlng_bounds.getCenter(), #{zoom_js});"
       end
+      
       "function center_#{dom_id}() {\n  #{check_resize_js}\n  #{set_center_js.join "\n"}\n}"
     end
 

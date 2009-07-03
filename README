@@ -13,6 +13,62 @@ To Use:
 
 2 - Do something like this in a view.
 
+
+======================================================
+MAP CONTROLS
+======================================================
+
+maps_controller.rb
+--------------------------
+class MapsController < ApplicationController
+	def	show
+		@map = GoogleMap::Map.new
+		
+		# define control types shown on map
+		@map.controls = [ :large, :scale, :type ]
+		
+		# allow user to double click to zoom
+		@map.double_click_zoom = true
+		
+		# not certain what this does
+		@map.continuous_zoom = false
+		
+		# allow user to scroll using mouse wheel?
+		@map.scroll_wheel_zoom = false
+		
+	end
+end
+
+======================================================
+MAP CENTERING AND ZOOM
+======================================================
+
+maps_controller.rb
+--------------------------
+class MapsController < ApplicationController
+	def	show
+		@map = GoogleMap::Map.new
+		@map.center = GoogleMap::Point.new(47.6597, -122.318) #SEATTLE WASHINGTON
+		@map.zoom = 10 #200km
+	end
+end
+
+
+======================================================
+MAP CENTERING USING BOUNDS
+======================================================
+
+maps_controller.rb
+--------------------------
+class MapsController < ApplicationController
+	def	show
+		@map = GoogleMap::Map.new
+		@map.bounds =  [GoogleMap::Point.new(47.6597, -121.318), GoogleMap::Point.new(48.6597, -123.318)] #SEATTLE WASHINGTON 50KM
+	end
+end
+
+
+
 ======================================================
 SIMPLE MARKER USAGE
 ======================================================
