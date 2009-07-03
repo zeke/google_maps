@@ -26,7 +26,19 @@ class MapsController < ApplicationController
 		
 		# define control types shown on map
 		@map.controls = [ :large, :scale, :type ]
-		
+		# valid controls options include
+		# :large 
+		# :small 
+		# :overview
+		# :large_3d
+		# :scale
+		# :type
+		# :menu_type
+		# :hierachical_type
+		# :zoom
+		# :zoom_3d
+		# :nav_label
+	        	
 		# allow user to double click to zoom
 		@map.double_click_zoom = true
 		
