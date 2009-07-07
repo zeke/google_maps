@@ -2,9 +2,11 @@ module GoogleMap
 
   class Icon
     #include Reloadable
-    include UnbackedDomId
+    #include UnbackedDomId
 
-    attr_accessor :width,
+    attr_accessor :map,
+                  :dom_id,
+                  :width,
                   :height,
                   :shadow_width,
                   :shadow_height,
@@ -27,6 +29,14 @@ module GoogleMap
       self.info_anchor_x   = 5
       self.info_anchor_y   = 1
       options.each_pair { |key, value| send("#{key}=", value) }
+      
+      if !map or !map.kind_of?(GoogleMap::Map)
+        raise "Must set map for GoogleMap::Icon."
+      end
+      if dom_id.blank?
+        self.dom_id = "#{map.dom_id}_icon_#{map.markers.size + 1}"
+      end
+      
     end
 
     def to_js
