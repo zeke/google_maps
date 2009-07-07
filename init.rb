@@ -9,3 +9,4 @@
 # require 'google_map/point'
 # require 'google_map/polyline'
 # require 'google_map/small_icon'
+require File.dirname(__FILE__) << "/lib/google_map/map"
