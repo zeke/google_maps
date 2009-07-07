@@ -15,13 +15,16 @@ module GoogleMap
 
     def initialize(options = {})
       options.each_pair { |key, value| send("#{key}=", value) }
+      
       if lat.blank? or lng.blank? or !map or !map.kind_of?(GoogleMap::Map)
         raise "Must set lat, lng, and map for GoogleMapMarker."
       end
+      
       if dom_id.blank?
         # This needs self to set the attr_accessor, why?
         self.dom_id = "#{map.dom_id}_marker_#{map.markers.size + 1}"
       end
+      
     end
 
     def open_info_window_function
@@ -41,18 +44,13 @@ module GoogleMap
     def to_js
       js = []
 
-      # If a icon is specified, use it in marker creation.
-      i = ", #{icon.dom_id}" if icon
       h = ", title: '#{marker_hover_text}'" if marker_hover_text
 
-      i = ", { icon: new GIcon( G_DEFAULT_ICON, '#{marker_icon_path}')#{h}}" if marker_icon_path
-
-      # js << "map.addOverlay( marker = new GMarker( new GLatLng(#{lat}, #{lng})), { "
-      # js << "  icon: new GIcon( G_DEFAULT_ICON, '#{marker_icon_path}' ), "
-      # js << "  title: '#{marker_hover_text}'"
-      # js << "} ) );"			
-
-      js << "#{dom_id} = new GMarker(new GLatLng(#{lat}, #{lng})#{i});"
+      # If a icon is specified, use it in marker creation.
+      i = ", { icon: #{icon.dom_id} #{h} }" if icon
+      i = ", { icon: new GIcon( G_DEFAULT_ICON, '#{marker_icon_path}') #{h} }" if marker_icon_path
+		
+      js << "#{dom_id} = new GMarker( new GLatLng( #{lat}, #{lng} ) #{i} );"
 
       if self.html
         js << "GEvent.addListener(#{dom_id}, 'click', function() {#{dom_id}_infowindow_function()});"
