@@ -11,7 +11,8 @@ module GoogleMap
                   :marker_icon_path,
                   :marker_hover_text,
                   :map,
-                  :icon
+                  :icon,
+                  :open_infoWindow
 
     def initialize(options = {})
       options.each_pair { |key, value| send("#{key}=", value) }
@@ -57,6 +58,10 @@ module GoogleMap
       end
 
       js << "#{map.dom_id}.addOverlay(#{dom_id});"
+
+      if open_infoWindow
+        js << "GEvent.trigger(#{dom_id}, 'click')"
+      end
 
       return js.join("\n")
     end
