@@ -12,7 +12,10 @@ module GoogleMap
                   :marker_hover_text,
                   :map,
                   :icon,
-                  :open_infoWindow
+                  :open_infoWindow,
+                  :draggable,
+                  :dragstart,
+                  :dragend
 
     def initialize(options = {})
       options.each_pair { |key, value| send("#{key}=", value) }
@@ -51,8 +54,11 @@ module GoogleMap
       i = ", { icon: #{icon.dom_id} #{h} }" if icon
       i = ", { icon: new GIcon( G_DEFAULT_ICON, '#{marker_icon_path}') #{h} }" if marker_icon_path
 		
-      js << "#{dom_id} = new GMarker( new GLatLng( #{lat}, #{lng} ) #{i} );"
-
+      options = 'draggable: true' if self.draggable
+      js << "#{dom_id} = new GMarker( new GLatLng( #{lat}, #{lng} )#{i}, {#{options}} );"
+      js << "GEvent.bind(#{dom_id}, \"dragend\", #{dom_id}, #{self.dragstart});" if dragstart
+      js << "GEvent.bind(#{dom_id}, \"dragend\", #{dom_id}, #{self.dragend});" if dragend
+      
       if self.html
         js << "GEvent.addListener(#{dom_id}, 'click', function() {#{dom_id}_infowindow_function()});"
       end
