@@ -4,7 +4,7 @@ GOOGLE_APPLICATION_ID = "ABQIAAAA3HdfrnxFAPWyY-aiJUxmqRTJQa0g3IQ9GZqIMmInSLzwtGD
 
 class GoogleMapTest < Test::Unit::TestCase
   def setup
-    @map = GoogleMap.new
+    @map = GoogleMap::Map.new
   end
 
   def test_new_map_has_empty_markers
@@ -15,7 +15,8 @@ class GoogleMapTest < Test::Unit::TestCase
     (1..5).each do |i|
       @map.markers << marker_factory
       assert_equal @map.markers.length, i
-      assert @map.to_html.include? "google_map_marker_#{i} = new GMarker(new GLatLng(40, -100));"
+      puts @map.to_html
+      assert @map.to_html.include? "google_map_marker_#{i} = new GMarker( new GLatLng( 40, -100 )  );"
     end
   end
   
@@ -35,13 +36,12 @@ class GoogleMapTest < Test::Unit::TestCase
   end
   
   def test_set_center_with_options
-    @map = GoogleMap.new({:center => [10,10]})
+    @map = GoogleMap::Map.new({:center => GoogleMap::Point.new(10, 10)})
     @map.markers << marker_factory
     assert @map.center_map_js.include? "new GLatLng(10, 10)"
   end
 
   def test_add_polylines
-    
     (1..5).each do |i|
       @map.overlays << polyline_factory
       assert_equal @map.overlays.length, i

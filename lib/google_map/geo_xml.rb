@@ -1,6 +1,6 @@
 module GoogleMap
 
-  class GoogleMapGeoXml
+  class GeoXml
     #include Reloadable
     include UnbackedDomId
   
