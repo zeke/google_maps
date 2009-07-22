@@ -133,7 +133,8 @@ class MapsController < ApplicationController
 												:lng => -122.318,
 												:html => 'My House',
 												:marker_icon_path => '/path/to/image',
-												:marker_hover_text => 'String to show on Mouse Over'
+												:marker_hover_text => 'String to show on Mouse Over',
+												:open_infoWindow => true #opens marker by default
 												)
   
 	end
