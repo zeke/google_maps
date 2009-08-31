@@ -11,11 +11,16 @@ module GoogleMap
                   :marker_icon_path,
                   :marker_hover_text,
                   :map,
-                  :icon,
+                  :icon, # For static images this must be a LetterIcon instance initialized with an
+                         # alphanumeric value {A-Z, 0-9}
                   :open_infoWindow,
                   :draggable,
                   :dragstart,
-                  :dragend
+                  :dragend,
+                  :size, # must be one of 'tiny', 'mid', or 'small'
+                  :color # 0xFFFFCC format, or one of:
+                          # black, brown, green, purple, yellow, blue, gray, orange, red, white
+                          # transparency not supported for markers
 
     def initialize(options = {})
       options.each_pair { |key, value| send("#{key}=", value) }
@@ -70,6 +75,16 @@ module GoogleMap
       end
 
       return js.join("\n")
+    end
+    
+    def to_static_param
+      param = []
+      
+      param << "size:#{size}" if self.size
+      param << "color:#{color}" if self.color
+      param << self.icon.to_static_param if self.icon.instance_of?(LetterIcon)
+      param << "#{lat},#{lng}"
+      return "markers=" + param.join("|")
     end
 
   end

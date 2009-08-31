@@ -33,7 +33,7 @@ def polyline_factory(options = {})
     :map => @map, 
     :color => "#00FF00", 
     :weight => 10, 
-    :opacity => 2, 
+    :opacity => 0.45, 
     :vertices => [
       GoogleMap::Point.new(40, -100),
       GoogleMap::Point.new(40, 100)]

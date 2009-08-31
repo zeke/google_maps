@@ -15,8 +15,8 @@ class GoogleMapTest < Test::Unit::TestCase
     (1..5).each do |i|
       @map.markers << marker_factory
       assert_equal @map.markers.length, i
-      puts @map.to_html
-      assert @map.to_html.include? "google_map_marker_#{i} = new GMarker( new GLatLng( 40, -100 )  );"
+      assert @map.to_html.include? "google_map_marker_#{i} = new GMarker( new GLatLng( 40, -100 ), {} );"
+      assert @map.static_img.include? "markers=40,-100"
     end
   end
   
@@ -45,7 +45,8 @@ class GoogleMapTest < Test::Unit::TestCase
     (1..5).each do |i|
       @map.overlays << polyline_factory
       assert_equal @map.overlays.length, i
-      assert @map.to_html.include? "#{@map.overlays[i - 1].dom_id} = new GPolyline(#{@map.overlays[i - 1].dom_id}_vertices, '#00FF00', 10, 2);"
+      assert @map.to_html.include? "#{@map.overlays[i - 1].dom_id} = new GPolyline(#{@map.overlays[i - 1].dom_id}_vertices, '#00FF00', 10, 0.45);"
+      assert @map.static_img.include? "path=weight:10|color:0x00FF0072|40,-100|40,100"
     end
   end
   
@@ -61,5 +62,17 @@ class GoogleMapTest < Test::Unit::TestCase
     assert !@map.to_html.include?("setMapType(GoogleMap)")
     @map.map_type = "foo"
     assert @map.to_html.include? "setMapType(foo)"
+    assert @map.static_img.include? "maptype=roadmap"
+  end
+  
+  def test_terrain_map_type
+    assert @map.static_img.include? "maptype=roadmap"
+    @map.map_type = "terrain"
+    assert @map.static_img.include? "maptype=terrain"
+  end
+  
+  def test_G_map_type
+    @map.map_type = "G_SATELLITE_MAP"
+    assert @map.static_img.include? "maptype=satellite"
   end
 end

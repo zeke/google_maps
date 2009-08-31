@@ -13,7 +13,15 @@ module GoogleMap
       :continuous_zoom,
       :scroll_wheel_zoom,
       :bounds,
-      :map_type
+      :map_type,
+      :ssl
+      
+    STATIC_MAP_TYPES = {
+      'G_NORMAL_MAP' => 'roadmap',
+      'G_SATELLITE_MAP' => 'satellite',
+      'G_HYBRID_MAP' => 'hybrid',
+      'G_PHYSICAL_MAP' => 'terrain'
+    }
 
     def initialize(options = {})
       self.dom_id = 'google_map'
@@ -24,13 +32,48 @@ module GoogleMap
       self.double_click_zoom = true
       self.continuous_zoom = false
       self.scroll_wheel_zoom = false
+      self.ssl = false
       options.each_pair { |key, value| send("#{key}=", value) }
+    end
+    
+    def static_img(width = 400, height = 400, options = {})
+      url = []
+      
+      if( self.ssl )
+        url << "https://maps-api-ssl.google.com/maps/api/staticmap?sensor=false&client=#{GOOGLE_CLIENT_ID}"
+      else
+        url << "http://maps.google.com/maps/api/staticmap?sensor=false&key=#{GOOGLE_APPLICATION_ID}"
+      end
+      url << "zoom=#{self.zoom}" if self.zoom
+      url << "size=#{width}x#{height}"
+      url << "center=#{center.to_static_param}" if self.center
+      self.markers.each do |marker|
+        url << marker.to_static_param
+      end
+      self.overlays.each do |overlay|
+        url << overlay.to_static_param
+      end
+      
+      if STATIC_MAP_TYPES.include?(self.map_type)
+        options[:maptype] ||= STATIC_MAP_TYPES[self.map_type]
+      elsif STATIC_MAP_TYPES.has_value?(self.map_type)
+        options[:maptype] ||= self.map_type
+      else
+        options[:maptype] ||= 'roadmap'
+      end
+      options[:format] ||= 'png'
+      options.each_pair { |key, value| url << "#{key}=#{value}"}
+      return url.join("&")
     end
 
     def to_html
       html = []
 
-      html << "<script src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=#{GOOGLE_APPLICATION_ID}' type='text/javascript'></script>"    
+      if( self.ssl )
+        html << "<script src='https://maps-api-ssl.google.com/maps?file=api&amp;v=2&amp;client=#{GOOGLE_CLIENT_ID}&amp;sensor=false' type='text/javascript'></script>"
+      else
+        html << "<script src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=#{GOOGLE_APPLICATION_ID}' type='text/javascript'></script>"
+      end
       html << "<script type=\"text/javascript\">\n/* <![CDATA[ */\n"  
       html << to_js
       html << "/* ]]> */</script> "

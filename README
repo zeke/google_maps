@@ -21,7 +21,8 @@ PLUGIN CONFIGURATION
   # This key is good for localhost:3000, signup for more at http://www.google.com/apis/maps/signup.html
   GOOGLE_APPLICATION_ID = "ABQIAAAA3HdfrnxFAPWyY-aiJUxmqRTJQa0g3IQ9GZqIMmInSLzwtGDKaBQ0KYLwBEKSM7F9gCevcsIf6WPuIQ"
 
-
+  # If you're using google map's premier service (which uses SSL connections) then set the environment variable as:
+  GOOGLE_CLIENT_ID = {your_client_id}
 
 ======================================================
 MAP CONTROLS
@@ -85,6 +86,7 @@ class MapsController < ApplicationController
 	def	show
 		@map = GoogleMap::Map.new
 		@map.bounds =  [GoogleMap::Point.new(47.6597, -121.318), GoogleMap::Point.new(48.6597, -123.318)] #SEATTLE WASHINGTON 50KM
+		# static_img does not support bounds
 	end
 end
 
@@ -112,6 +114,10 @@ maps/show.html.erb
   <div style="width: 500px; height: 500px;">
     <%= @map.div %>
   </div>
+  
+  <!-- OR -->
+  <!-- Gets the url for a static image with this marker (:html not supported) -->
+  <img src="<%=@map.static_img%>" />
 
 
 ======================================================
@@ -136,9 +142,8 @@ class MapsController < ApplicationController
 												:marker_hover_text => 'String to show on Mouse Over',
 												:open_infoWindow => true #opens marker by default
 												)
-  
 	end
-end
+end 
 
 maps/show.html.erb
 -------------------------
@@ -146,6 +151,30 @@ maps/show.html.erb
   <div style="width: 500px; height: 500px;">
     <%= @map.div %>
   </div>
+
+
+
+maps_controller.rb
+--------------------------
+# Note that html, marker_icon_path, and marker_hover_text are not supported
+# by static_img.  Likewise the following size, and color parameters do nothing
+# for dynamic maps.
+class MapsController < ApplicationController
+  def show
+    @map = GoogleMap::Map.new
+    @map.markers << GoogleMap::Marker.new( :map => @map,
+                      :lat => 47.6597,
+                      :lng => -122.318,
+                      :size => 'mid',  # Options:  tiny, mid, small
+                      :color => 'red',
+                      :icon => GoogleMap::LetterIcon.new('s') ) # Alphanumeric character
+  end
+end
+
+maps/show.html.erb
+-----------------------
+  <!-- Creates a static image with the marker as specified -->
+  <img src="<%=@map.static_img%>" />
 
 
 ======================================================
@@ -165,6 +194,7 @@ class MapsController < ApplicationController
         end
 		
   		# plot polyline
+  		# static_image also supports the :fill_color option
 		@map.overlays << GoogleMap::Polyline.new(	:map => @map, 
 													:color=>'#FF0000', 
 													:weight=>'2', 
@@ -180,3 +210,5 @@ maps/show.html.erb
   <div style="width: 500px; height: 500px;">
     <%= @map.div %>
   </div>
+  <!-- Creates a static image with the overlay displayed -->
+  <img src="<%=@map.static_img%>" />

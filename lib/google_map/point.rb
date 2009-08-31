@@ -17,6 +17,9 @@ module GoogleMap
       return "new GLatLng(#{self.lat}, #{self.lng})"  	
     end
     
+    def to_static_param
+      return "#{self.lat},#{self.lng}"
+    end
   end
 
 end
