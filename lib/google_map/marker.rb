@@ -40,7 +40,18 @@ module GoogleMap
       js = []
 
       js << "function #{dom_id}_infowindow_function() {"
-      js << "  #{dom_id}.openInfoWindowHtml(\"#{escape_javascript(html)}\")"
+      js << "  #{dom_id}.openInfoWindowHtml(\"#{escape_javascript(html)}\");" if self.html
+      
+      if self.map.street_view
+        js << "  markerLoc = new GLatLng( #{lat}, #{lng} );"
+        js << "  markerClicked = true;"
+        # Without this boolean toggle, the map will register two clicks:
+        # one for the marker, and one on the map.  This prevents the
+        # incorrect location being set
+        js << "  setTimeout('markerClicked = false;', 100);"
+        js << "  #{self.map.street_view.dom_id}_street_view_go(markerLoc);"
+      end
+      
       js << "}"
 
       return js.join("\n")

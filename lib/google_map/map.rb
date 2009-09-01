@@ -14,7 +14,8 @@ module GoogleMap
       :scroll_wheel_zoom,
       :bounds,
       :map_type,
-      :ssl
+      :ssl,
+      :street_view
       
     STATIC_MAP_TYPES = {
       'G_NORMAL_MAP' => 'roadmap',
@@ -51,7 +52,7 @@ module GoogleMap
         url << marker.to_static_param
       end
       self.overlays.each do |overlay|
-        url << overlay.to_static_param
+        url << overlay.to_static_param if overlay.is_a? GoogleMap::Polyline
       end
       
       if STATIC_MAP_TYPES.include?(self.map_type)
@@ -70,7 +71,7 @@ module GoogleMap
       html = []
 
       if( self.ssl )
-        html << "<script src='https://maps-api-ssl.google.com/maps?file=api&amp;v=2&amp;client=#{GOOGLE_CLIENT_ID}&amp;sensor=false' type='text/javascript'></script>"
+        html << "<script src='https://maps-api-ssl.google.com/maps?file=api&v=2&client=#{GOOGLE_CLIENT_ID}&sensor=false' type='text/javascript'></script>"
       else
         html << "<script src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=#{GOOGLE_APPLICATION_ID}' type='text/javascript'></script>"
       end
@@ -90,24 +91,28 @@ module GoogleMap
 
       # Initialise the map variable so that it can externally accessed.
       js << "var #{dom_id};"
+      js << "var markerClicked = false;"
       
       markers.each { |marker| js << "var #{marker.dom_id};" }
 
-      js << markers_functions_js
+      js << street_view_js
       js << center_map_js
+      js << markers_functions_js
 
       js << "function initialize_google_map_#{dom_id}() {"
       js << "  if(GBrowserIsCompatible()) {"
       js << "    #{dom_id} = new GMap2(document.getElementById('#{dom_id}'));"
 
       js << "    if (self['GoogleMapOnLoad']) {"
-      js << "      #{dom_id}.load = GEvent.addListener(#{dom_id},'load',GoogleMapOnLoad)"
+      js << "      #{dom_id}.load = GEvent.addListener(#{dom_id},'load',GoogleMapOnLoad);"
       js << "    }"
+      
+      js << "    initialize_google_street_view_#{street_view.dom_id}()" if self.street_view
 
       js << '    ' + map_type_js
-      js << '    ' + controls_js
       js << '    ' + center_on_bounds_js
       js << '    ' + markers_icons_js
+      js << '    ' + controls_js
 
       # Put all the markers on the map.
       for marker in markers
@@ -117,7 +122,7 @@ module GoogleMap
 
       overlays.each do |overlay|
         js << overlay.to_js
-        js << "#{dom_id}.addOverlay(#{overlay.dom_id});"  
+        js << "#{dom_id}.addOverlay(#{overlay.dom_id});"
       end
 
       js << "#{dom_id}.#{to_enable_prefix double_click_zoom}DoubleClickZoom();"
@@ -133,19 +138,20 @@ module GoogleMap
       js << "  window.onload = initialize_google_map_#{dom_id};"
       js << "} else {"
       js << "  old_before_google_map_#{dom_id} = window.onload;"
+      # In my testing the following doesn't actually appear to work...?
       js << "  window.onload = function() {" 
       js << "    old_before_google_map_#{dom_id}();"
       js << "    initialize_google_map_#{dom_id}();"
       js << "  }"
       js << "}"
 
-      # Unload the map on window load preserving anything already on window.onunload.
+      # Unload the map on window unload preserving anything already on window.onunload.
       #js << "if (typeof window.onunload != 'function') {"
       #js << "  window.onunload = GUnload();"
       #js << "} else {"
       #js << "  old_before_onunload = window.onload;"
       #js << "  window.onunload = function() {" 
-      #js << "    old_before_onunload;"
+      #js << "    old_before_onunload();"
       #js << "    GUnload();" 
       #js << "  }"
       #js << "}"
@@ -165,6 +171,7 @@ module GoogleMap
       js = []
 
       controls.each do |control|
+        c = nil
         case control
         when :large, :small, :overview
           c = "G#{control.to_s.capitalize}MapControl"
@@ -184,11 +191,27 @@ module GoogleMap
           c = "GSmallZoomControl3D"
         when :nav_label
           c = "GNavLabelControl"
+        when :street_view
+          js << street_view.event_listener
         end
-        js << "#{dom_id}.addControl(new #{c}());"
+        js << "#{dom_id}.addControl(new #{c}());" if c
       end
 
       return js.join("\n")
+    end
+    
+    def street_view_js
+      js = []
+      if controls.include? :street_view
+        if !self.street_view || !self.street_view.is_a?(GoogleMap::StreetView)
+          self.street_view = GoogleMap::StreetView.new(
+            :map => self
+          )
+        end
+      end
+      if self.street_view
+        js << street_view.to_js
+      end
     end
 
     def markers_functions_js
@@ -225,6 +248,11 @@ module GoogleMap
       set_center_js = []
       
       if self.center
+        # Also set a 'default' lat/lng on the street view if available, as our center point
+        if self.street_view
+          self.street_view.lat = center.lat if !self.street_view.lat
+          self.street_view.lng = center.lng if !self.street_view.lng
+        end
         set_center_js << "#{dom_id}.setCenter(new GLatLng(#{center.lat}, #{center.lng}), #{zoom_js});"
       else
         synch_bounds
