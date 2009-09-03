@@ -18,11 +18,13 @@ module GoogleMap
                   :dragstart,
                   :dragend,
                   :size, # must be one of 'tiny', 'mid', or 'small'
-                  :color # 0xFFFFCC format, or one of:
+                  :color, # 0xFFFFCC format, or one of:
                           # black, brown, green, purple, yellow, blue, gray, orange, red, white
                           # transparency not supported for markers
+                  :click_street_view
 
     def initialize(options = {})
+      self.click_street_view = false
       options.each_pair { |key, value| send("#{key}=", value) }
       
       if lat.blank? or lng.blank? or !map or !map.kind_of?(GoogleMap::Map)
@@ -40,15 +42,25 @@ module GoogleMap
       js = []
 
       js << "function #{dom_id}_infowindow_function() {"
-      js << "  #{dom_id}.openInfoWindowHtml(\"#{escape_javascript(html)}\");" if self.html
+      js << "  var windowOptions = {"
+      js << "    onOpenFn:function(){"
+      js << "      markerClicked = true;"
+      js << "    },"
+      js << "    onCloseFn:function(){"
+      js << "      setTimeout('markerClicked = false;', 100);"
+      js << "    }"
+      js << "  };"
+      js << "  #{map.dom_id}.openInfoWindowHtml(new GLatLng( #{lat}, #{lng} ), \"#{escape_javascript(html)}\", windowOptions);" if self.html
+      js << "  if(!markerClicked) {"
+      js << "    markerClicked = true;"
+      # Without this boolean toggle, the map will register two clicks:
+      # one for the marker, and one on the map.  This prevents the
+      # incorrect location being set
+      js << "    setTimeout('markerClicked = false;', 100);" if !self.html
+      js << "  }"
       
-      if self.map.street_view
+      if self.map.street_view && self.click_street_view
         js << "  markerLoc = new GLatLng( #{lat}, #{lng} );"
-        js << "  markerClicked = true;"
-        # Without this boolean toggle, the map will register two clicks:
-        # one for the marker, and one on the map.  This prevents the
-        # incorrect location being set
-        js << "  setTimeout('markerClicked = false;', 100);"
         js << "  #{self.map.street_view.dom_id}_street_view_go(markerLoc);"
       end
       

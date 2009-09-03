@@ -10,13 +10,15 @@ module GoogleMap
                   :color,
                   :weight,
                   :opacity,
-                  :fill_color
+                  :fill_color,
+                  :visible
 
     def initialize(options = {})
       self.vertices = []
       self.color = "#000000"
       self.weight = 1
       self.opacity = 1
+      self.visible = true
       options.each_pair { |key, value| send("#{key}=", value) }
       if !map or !map.kind_of?(GoogleMap::Map)
         raise "Must set map for GoogleMap::Polyline."
@@ -26,7 +28,7 @@ module GoogleMap
       end
       if dom_id.blank?
         # This needs self to set the attr_accessor, why?
-        self.dom_id = "#{map.dom_id}_marker_#{map.markers.size + 1}"
+        self.dom_id = "#{map.dom_id}_polyline_#{map.overlays.size + 1}"
       end
     end
             
@@ -38,7 +40,7 @@ module GoogleMap
         js << "#{dom_id}_vertices[#{index}] = new GLatLng(#{point.lat}, #{point.lng});"
       end
 
-      js << "#{dom_id} = new GPolyline(#{dom_id}_vertices, '#{color}', #{weight}, #{opacity});"
+      js << "var #{dom_id} = new GPolyline(#{dom_id}_vertices, '#{color}', #{weight}, #{opacity});"
 
       js.join "\n"
     end

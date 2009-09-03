@@ -311,8 +311,9 @@ class MapsController < ApplicationController
     
     # Creating a marker on your map with the :street_view control or a street_view object set
     # will cause the street view to automatically change to the location of the marker when a user
-    # clicks on it if street view data is available for it.
-    @map.markers << GoogleMap::Marker.new( :map => @map, :lat => 48.6597, :lng => -123.318 )
+    # clicks on it if street view data is available for it (must set the :click_street_view option to true,
+    # defaults to false)
+    @map.markers << GoogleMap::Marker.new( :map => @map, :lat => 48.6597, :lng => -123.318, :click_street_view => true )
   end
 end
 
@@ -324,4 +325,58 @@ maps/show.html.erb
   <div style="width: 500px; height: 1000px;">
     <%= @map.div('100%', '50%') %>
     <%= @map.street_view.div('100%', '50%') %>
+  </div>
+  
+  
+====================================================
+ STREET VIEW - SWAP OUT SAME WINDOW
+====================================================
+
+maps_controller.rb
+----------------------
+class MapsController < ApplicationController
+  def show
+    lat = 47.6597
+    lng = -122.318
+    @map = GoogleMap::Map.new
+    
+    # Notes:
+    #   For the street view object, be sure you set the dom id to the exact same dom id as the map itself, as below
+    #   Also, if you want to be able to close the street view and view map view again (swap back and forth),
+    #   make sure you add the close control => true for the street view object.  Making your dom id's equal will
+    #   allow your street view to use the same div tag as your map (it will appear above the map).
+    @map.street_view = GoogleMap::StreetView.new(:map => @map, :dom_id => @map.dom_id, :close_control => true)
+    
+    @map.markers << GoogleMap::Marker.new(:map => @map, :lat => lat, :lng => lng, :html => "My House!")
+    
+    # the visible option sets the starting visibility of the overlay, which will be toggled by the control
+    # defined later.
+    @map.overlays << GoogleMap::StreetViewOverlay.new(:map => @map, :visible => false)
+    
+    # This is a custom control for the map view.  It creates a button in the upper-right that will activate the
+    # street view defined by the map's street_view property.  It will always open up the street view in the same
+    # location, as defined by lat and lng.  Future changes may give it the ability to change this, or to have a separate
+    # street view link on each marker etc, but for now if you define this control, you also define where it sets the street
+    # view.
+    street_view_button = GoogleMap::StreetViewButtonControl.new(:map => @map, :lat => lat, :lng => lng, :text => "See Street")
+    
+    # Another custom control to have the ability to toggle on and off the street view overlay defined by that object in overlays
+    # the icon option let's you set a custom image for the control.  For both of these custom controls :text, and :icon are both
+    # optional - They have default text they display if not defined.
+    street_view_overlay_control = GoogleMap::StreetViewOverlayControl.new(:map => @map, :icon => '/images/street_overlay.png')
+    
+    # Note that the controls property can now contain both pre-defined symbols, predefined 'custom' control objects, and any
+    # custom control objects that you want to define yourself.
+    @map.controls = [:zoom, street_view_button, street_view_overlay_control]
+    
+    # You may also wish to add the :street_view symbol control to controls which will additionally allow you to click on the map to
+    # activate street view (and close street view with the street view's close control)
+  end
+end
+
+maps/show.html.erb
+-------------------
+  <%= @map.to_html %>
+  <div style='width: 500px; height: 500px;'>
+    <%= @map.div %>
   </div>

@@ -8,9 +8,11 @@ module GoogleMap
                   :lng,
                   :yaw,
                   :pitch,
-                  :zoom
+                  :zoom,
+                  :close_control
 
     def initialize(options = {})
+      self.close_control = false
       options.each_pair { |key, value| send("#{key}=", value) }
       
       if !map or !map.kind_of?(GoogleMap::Map)
@@ -22,35 +24,13 @@ module GoogleMap
       end
     end
 
-    #def to_html
-    #  html = []
-    #  html << "<script src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=#{GOOGLE_APPLICATION_ID}' type='text/javascript'></script>"
-    #  html << "<script type=\"text/javascript\">"
-    #  html << to_js
-    #  html << "</script> "
-
-    #  return html.join("\n")
-    #end
-
     def to_js
       js = []
       js << "var #{dom_id}_street_view;"
       js << "var #{dom_id}_street_view_client;"
       js << "function initialize_google_street_view_#{dom_id}() {"
-      #pOpts = []
-      
-      #if self.lat && self.lng
-      #  js << "  var my_loc = new GLatLng(#{lat}, #{lng});"
-      #  pOpts << "latlng:my_loc"
-      #end
-
-      #if view_js = pov_js
-      #  js << "  my_pov = #{view_js};"
-      #  pOpts << "pov:my_pov"
-      #end
       
       js << "  #{dom_id}_street_view_client = new GStreetviewClient();"
-      #js << "  panorama_options = {#{pOpts.join(', ')}};"
       js << "  #{dom_id}_street_view = new GStreetviewPanorama(document.getElementById(\"#{dom_id}\"));"
       
       setLocJs = ""
@@ -67,7 +47,6 @@ module GoogleMap
       end
       js << setLocJs
       
-      #js << "  #{dom_id}_street_view.hide();"
       js << "  GEvent.addListener(#{dom_id}_street_view, \"error\", handle_no_flash);"
       js << "}"
       js << ""
@@ -88,10 +67,10 @@ module GoogleMap
       
       js << "function #{dom_id}_street_view_go(latlng) {"
       js << "  #{dom_id}_street_view_client.getNearestPanorama(latlng, #{dom_id}_street_view_show_loc);"
-      #js << "  #{dom_id}_street_view.setLocationAndPOV(latlng, my_pov);"
-      #js << "  #{dom_id}_street_view.show();"
       js << "}"
       js << ""
+      
+      js << create_control_functions_js
       
       js << "function #{dom_id}_street_view_show_loc(panoData) {"
       js << "  if( panoData.code != 200 ){"
@@ -99,8 +78,8 @@ module GoogleMap
       js << "  }"
       js << ""
       
+      js << show_controls_js
       js << "  #{dom_id}_street_view.setLocationAndPOV(panoData.location.latlng);"
-      #js << "  #{dom_id}_street_view.show();"
       js << "}"
 
       # Load the map on window load preserving anything already on window.onload.
@@ -114,6 +93,68 @@ module GoogleMap
       #js << "  }"
       #js << "}"
 
+      return js.join("\n")
+    end
+    
+    def create_control_functions_js
+      js = []
+      
+      if self.close_control
+        js << "var #{dom_id}_close_control"
+        js << "function create_#{dom_id}_street_view_close_control() {"
+        js << "  #{dom_id}_close_control = document.createElement('div');"
+        js << "  document.getElementById('#{dom_id}').appendChild(#{dom_id}_close_control);"
+        js << "  #{dom_id}_close_control.appendChild(document.createTextNode('Map'));"
+        js << "  #{dom_id}_close_control.onclick = function(){"
+        js << "    #{dom_id}_street_view.hide();"
+        js << hide_controls_js
+        js << "  }"
+        js << "  #{dom_id}_close_control.style.textDecoration = 'underline';"
+        js << "  #{dom_id}_close_control.style.color = '#0000cc';"
+        js << "  #{dom_id}_close_control.style.backgroundColor = 'white';"
+        js << "  #{dom_id}_close_control.style.zIndex = '2';"
+        js << "  document.getElementById('#{dom_id}').style.zIndex = '1';"
+        js << "  #{dom_id}_close_control.style.position = 'absolute';"
+        js << "  #{dom_id}_close_control.style.right = '10px';"
+        js << "  #{dom_id}_close_control.style.padding = '2px';"
+        js << "  #{dom_id}_close_control.style.borderStyle = 'solid';"
+        js << "  #{dom_id}_close_control.style.borderWidth = '1px';"
+        js << "  #{dom_id}_close_control.style.top = '8px';"
+        js << "}"
+        
+        js << "function hide_#{dom_id}_street_view_close_control() {"
+        js << "  #{dom_id}_close_control.style.visibility = 'hidden';"
+        js << "}"
+        
+        js << "function show_#{dom_id}_street_view_close_control() {"
+        js << "  #{dom_id}_close_control.style.visibility = 'visible';"
+        js << "}"
+      end
+      
+      return js.join("\n")
+    end
+    
+    def show_controls_js
+      js = []
+      
+      if self.close_control
+        js << "  if(#{dom_id}_close_control){"
+        js << "    show_#{dom_id}_street_view_close_control();"
+        js << "  }else {"
+        js << "    create_#{dom_id}_street_view_close_control();"
+        js << "  }"
+      end
+      
+      return js.join("\n")
+    end
+    
+    def hide_controls_js
+      js = []
+      
+      if self.close_control
+        js << "  hide_#{dom_id}_street_view_close_control();"
+      end
+      
       return js.join("\n")
     end
     
