@@ -358,7 +358,9 @@ class MapsController < ApplicationController
     # location, as defined by lat and lng.  Future changes may give it the ability to change this, or to have a separate
     # street view link on each marker etc, but for now if you define this control, you also define where it sets the street
     # view.
-    street_view_button = GoogleMap::StreetViewButtonControl.new(:map => @map, :lat => lat, :lng => lng, :text => "See Street")
+    # the face_point option will cause the street viewer to automatically find the nearest street view, and face the camera towards
+    # the given location.  Defaults to false (faces true north instead)
+    street_view_button = GoogleMap::StreetViewButtonControl.new(:map => @map, :lat => lat, :lng => lng, :text => "See Street", :face_point => true)
     
     # Another custom control to have the ability to toggle on and off the street view overlay defined by that object in overlays
     # the icon option let's you set a custom image for the control.  For both of these custom controls :text, and :icon are both

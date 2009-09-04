@@ -103,6 +103,14 @@ module GoogleMap
       
       return js.join("\n")
     end
+    
+    def add_control_to_map_js
+      js = []
+      
+      js << "#{map.dom_id}.addControl(new #{control_name}());"
+      
+      return js.join("\n")
+    end
 
     def add_listener_js
       return ""

@@ -60,8 +60,8 @@ module GoogleMap
       js << "  }"
       
       if self.map.street_view && self.click_street_view
-        js << "  markerLoc = new GLatLng( #{lat}, #{lng} );"
-        js << "  #{self.map.street_view.dom_id}_street_view_go(markerLoc);"
+        js << "  my_loc = new GLatLng( #{lat}, #{lng} );"
+        js << "  #{self.map.street_view.dom_id}_street_view_go_with_POV(my_loc);"
       end
       
       js << "}"

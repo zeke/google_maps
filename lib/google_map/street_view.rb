@@ -28,6 +28,7 @@ module GoogleMap
       js = []
       js << "var #{dom_id}_street_view;"
       js << "var #{dom_id}_street_view_client;"
+      js << "var my_loc;"
       js << "function initialize_google_street_view_#{dom_id}() {"
       
       js << "  #{dom_id}_street_view_client = new GStreetviewClient();"
@@ -70,6 +71,11 @@ module GoogleMap
       js << "}"
       js << ""
       
+      js << "function #{dom_id}_street_view_go_with_POV(latlng) {"
+      js << "  #{dom_id}_street_view_client.getNearestPanorama(latlng, #{dom_id}_street_view_show_loc_and_POV)"
+      js << "}"
+      js << ""
+      
       js << create_control_functions_js
       
       js << "function #{dom_id}_street_view_show_loc(panoData) {"
@@ -80,6 +86,38 @@ module GoogleMap
       
       js << show_controls_js
       js << "  #{dom_id}_street_view.setLocationAndPOV(panoData.location.latlng);"
+      js << "}"
+      js << ""
+      
+      js << "function #{dom_id}_street_view_show_loc_and_POV(panoData) {"
+      js << "  if( panoData.code != 200 ){"
+      js << "    return;"
+      js << "  }"
+      js << ""
+      
+      js << show_controls_js
+      js << "  var angle = #{dom_id}_compute_angle(my_loc, panoData.location.latlng);"
+      js << "  #{dom_id}_street_view.setLocationAndPOV(panoData.location.latlng, {yaw: angle});"
+      js << "}"
+      js << ""
+      
+      js << "function #{dom_id}_compute_angle(endLatLng, startLatLng) {"
+      js << "  var DEGREE_PER_RADIAN = 57.2957795;"
+      js << "  var RADIAN_PER_DEGREE = 0.017453;"
+      js << "  var dlat = endLatLng.lat() - startLatLng.lat();"
+      js << "  var dlng = endLatLng.lng() - startLatLng.lng();"
+      js << "  var yaw = Math.atan2(dlng * Math.cos(endLatLng.lat() * RADIAN_PER_DEGREE), dlat) * DEGREE_PER_RADIAN;"
+      js << "  return #{dom_id}_wrap_angle(yaw);"
+      js << "}"
+      js << ""
+      
+      js << "function #{dom_id}_wrap_angle(angle){"
+      js << "  if( angle >= 360) {"
+      js << "    angle -= 360;"
+      js << "  }else if( angle < 0) {"
+      js << "    angle += 360;"
+      js << "  }"
+      js << "  return angle;"
       js << "}"
 
       # Load the map on window load preserving anything already on window.onload.
@@ -120,6 +158,7 @@ module GoogleMap
         js << "  #{dom_id}_close_control.style.borderStyle = 'solid';"
         js << "  #{dom_id}_close_control.style.borderWidth = '1px';"
         js << "  #{dom_id}_close_control.style.top = '8px';"
+        js << "  #{dom_id}_close_control.style.cursor = 'pointer';"
         js << "}"
         
         js << "function hide_#{dom_id}_street_view_close_control() {"

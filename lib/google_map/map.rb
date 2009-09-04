@@ -111,7 +111,7 @@ module GoogleMap
       js << "      #{dom_id}.load = GEvent.addListener(#{dom_id},'load',GoogleMapOnLoad);"
       js << "    }"
       
-      js << "    initialize_google_street_view_#{street_view.dom_id}()" if self.street_view
+      js << "    initialize_google_street_view_#{street_view.dom_id}();" if self.street_view
 
       js << '    ' + map_type_js
       js << '    ' + center_on_bounds_js
@@ -200,7 +200,7 @@ module GoogleMap
           js << street_view.event_listener
         else
           if control.is_a?(GoogleMap::CustomControl)
-            c = control.control_name
+            js << control.add_control_to_map_js
             js << control.add_listener_js
           else
             raise "Unknown control type:  #{control}"
