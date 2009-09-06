@@ -56,7 +56,7 @@ module GoogleMap
 		
       options = 'draggable: true' if self.draggable
       js << "#{dom_id} = new GMarker( new GLatLng( #{lat}, #{lng} )#{i}, {#{options}} );"
-      js << "GEvent.bind(#{dom_id}, \"dragend\", #{dom_id}, #{self.dragstart});" if dragstart
+      js << "GEvent.bind(#{dom_id}, \"dragstart\", #{dom_id}, #{self.dragstart});" if dragstart
       js << "GEvent.bind(#{dom_id}, \"dragend\", #{dom_id}, #{self.dragend});" if dragend
       
       if self.html
