@@ -48,7 +48,7 @@ module GoogleMap
     def to_js
       js = []
 
-      h = ", title: '#{marker_hover_text}'" if marker_hover_text
+      h = ", title: '#{escape_javascript(marker_hover_text)}'" if marker_hover_text
 
       # If a icon is specified, use it in marker creation.
       i = ", { icon: #{icon.dom_id} #{h} }" if icon
