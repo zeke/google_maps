@@ -119,7 +119,7 @@ Advanced Marker Usage
 ======================================================
 
 # Available icon classes:
-# GoogleMap::LetterIcon.new(@map, 'A')
+# GoogleMap::LetterIcon.new(@map, 'A') # letter must be uppercase
 # GoogleMap::SmallIcon.new(@map, 'yellow')
 
 maps_controller.rb
