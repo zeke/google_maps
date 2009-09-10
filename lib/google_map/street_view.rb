@@ -29,10 +29,12 @@ module GoogleMap
       js << "var #{dom_id}_street_view;"
       js << "var #{dom_id}_street_view_client;"
       js << "var my_loc;"
+      js << "var user_has_flash = true;"
       js << "function initialize_google_street_view_#{dom_id}() {"
       
       js << "  #{dom_id}_street_view_client = new GStreetviewClient();"
       js << "  #{dom_id}_street_view = new GStreetviewPanorama(document.getElementById(\"#{dom_id}\"));"
+      js << "  GEvent.addListener(#{dom_id}_street_view, \"error\", handle_no_flash);"
       
       setLocJs = ""
       view_js = pov_js
@@ -48,13 +50,19 @@ module GoogleMap
       end
       js << setLocJs
       
-      js << "  GEvent.addListener(#{dom_id}_street_view, \"error\", handle_no_flash);"
       js << "}"
       js << ""
       
+      #js << turn_off_street_view_function_js
       js << "function handle_no_flash(errorCode) {"
       js << "  if(errorCode == 603) {"
-      js << "    document.getElementById(\"#{dom_id}\").innerHtml = 'The flash player is required for street view.  You may download it from the <a href=\"http://get.adobe.com/flashplayer/\">Adobe website</a>.';"
+      #js << "    user_has_flash = false;"
+      #js << "    turn_off_street_view();"
+      #js << "    alert('no flash!');"
+      js << "    user_has_flash = false;"
+      js << hide_controls_js
+      js << "    document.getElementById(\"#{self.map.dom_id}_no_flash\").innerHTML = 'Flash player is required for street view.  You may download it from the <a href=\"http://get.adobe.com/flashplayer/\" target=\"_blank\">Adobe website</a>.';"
+      js << "    return false;"
       js << "  }"
       js << "}"
       js << ""
@@ -84,8 +92,10 @@ module GoogleMap
       js << "  }"
       js << ""
       
-      js << show_controls_js
       js << "  #{dom_id}_street_view.setLocationAndPOV(panoData.location.latlng);"
+      js << "  if(user_has_flash){"
+      js << show_controls_js
+      js << "  }"
       js << "}"
       js << ""
       
@@ -95,9 +105,11 @@ module GoogleMap
       js << "  }"
       js << ""
       
-      js << show_controls_js
       js << "  var angle = #{dom_id}_compute_angle(my_loc, panoData.location.latlng);"
       js << "  #{dom_id}_street_view.setLocationAndPOV(panoData.location.latlng, {yaw: angle});"
+      js << "  if(user_has_flash){"
+      js << show_controls_js
+      js << "  }"
       js << "}"
       js << ""
       
@@ -133,6 +145,20 @@ module GoogleMap
 
       return js.join("\n")
     end
+    
+    #def turn_off_street_view_function_js
+    #  js = []
+    #  
+    #  js << "function turn_off_street_view(){"
+    #  self.map.controls.each do |control|
+    #    if control.is_a?(StreetViewButtonControl)
+    #      js << control.remove_control_from_map_js
+    #    end
+    #  end
+    #  js << "}"
+    #  
+    #  return js.join("\n")
+    #end
     
     def create_control_functions_js
       js = []

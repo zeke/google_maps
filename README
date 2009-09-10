@@ -319,12 +319,17 @@ end
 
 Even if you didn't set a street_view object implicitly, setting the control :street_view
 will give you a shell street_view object to still collect a div tag for.
+
+If a user doesn't have flash, a message to visit the adobe website will appear in the noflash_div tag.
 maps/show.html.erb
 ------------------------
   <%= @map.to_html %>
   <div style="width: 500px; height: 1000px;">
     <%= @map.div('100%', '50%') %>
     <%= @map.street_view.div('100%', '50%') %>
+  </div>
+  <div style="width: 500px;">
+    <%= @map.noflash_div %>
   </div>
   
   
@@ -381,4 +386,7 @@ maps/show.html.erb
   <%= @map.to_html %>
   <div style='width: 500px; height: 500px;'>
     <%= @map.div %>
+  </div>
+  <div style="width: 500px;">
+    <%= @map.noflash_div %>
   </div>

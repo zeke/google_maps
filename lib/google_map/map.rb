@@ -321,6 +321,10 @@ module GoogleMap
     def div(width = '100%', height = '100%')
       "<div id='#{dom_id}' style='width: #{width}; height: #{height}'></div>"
     end
+    
+    def noflash_div(width = '100%')
+      "<div id='#{dom_id}_no_flash' style='width: #{width}'></div>"
+    end
 
   end
 end

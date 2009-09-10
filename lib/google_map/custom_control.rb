@@ -107,7 +107,16 @@ module GoogleMap
     def add_control_to_map_js
       js = []
       
-      js << "#{map.dom_id}.addControl(new #{control_name}());"
+      js << "#{dom_id}_control = new #{control_name}();"
+      js << "#{map.dom_id}.addControl(#{dom_id}_control);"
+      
+      return js.join("\n")
+    end
+    
+    def remove_control_from_map_js
+      js = []
+      
+      js << "#{map.dom_id}.removeControl(#{dom_id}_control);"
       
       return js.join("\n")
     end
