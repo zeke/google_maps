@@ -24,6 +24,23 @@ PLUGIN CONFIGURATION
 
 
 ======================================================
+MAP OPTIONS
+======================================================
+
+maps_controller.rb
+--------------------------
+class MapsController < ApplicationController
+	def	show
+	  # Initialize new Google Map with some custom JS that needs to be included.
+	  # You can use this, to define custom GEvents, for things that need to
+	  # happen, when for example a user zooms.
+		@map = GoogleMap::Map.new :custom_js => render(:partial => "map_js.js.erb")
+	end
+end
+
+
+
+======================================================
 MAP CONTROLS
 ======================================================
 

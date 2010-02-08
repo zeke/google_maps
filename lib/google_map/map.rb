@@ -13,7 +13,8 @@ module GoogleMap
       :continuous_zoom,
       :scroll_wheel_zoom,
       :bounds,
-      :map_type
+      :map_type,
+      :custom_js
 
     def initialize(options = {})
       self.dom_id = 'google_map'
@@ -72,6 +73,9 @@ module GoogleMap
         js << ''
       end
 
+      # Add the custom JS.
+      js << custom_js
+      
       overlays.each do |overlay|
         js << overlay.to_js
         js << "#{dom_id}.addOverlay(#{overlay.dom_id});"  
